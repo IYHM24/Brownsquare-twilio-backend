@@ -1,47 +1,30 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Consulte https://aka.ms/customizecontainer para aprender a personalizar su contenedor de depuración y cómo Visual Studio usa este Dockerfile para compilar sus imágenes para una depuración más rápida.
 
+# Esta fase se usa cuando se ejecuta desde VS en modo rápido (valor predeterminado para la configuración de depuración)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
 WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
 
-# Copy package files
-COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy source code
+# Esta fase se usa para compilar el proyecto de servicio
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["Brownsquare-twilio-backend.csproj", "."]
+RUN dotnet restore "./Brownsquare-twilio-backend.csproj"
 COPY . .
+WORKDIR "/src/."
+RUN dotnet build "./Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Build the application
-RUN npm run build
+# Esta fase se usa para publicar el proyecto de servicio que se copiará en la fase final.
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Production stage
-FROM node:18-alpine AS production
-
+# Esta fase se usa en producción o cuando se ejecuta desde VS en modo normal (valor predeterminado cuando no se usa la configuración de depuración)
+FROM base AS final
 WORKDIR /app
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nestjs -u 1001
-
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy built application
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-
-# Switch to non-root user
-USER nestjs
-
-# Expose port
-EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js
-
-# Start the application
-CMD ["node", "dist/main"]
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Brownsquare-twilio-backend.dll"]

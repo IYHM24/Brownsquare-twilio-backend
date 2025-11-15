@@ -1,0 +1,6 @@
+@Brownsquare_twilio_backend_HostAddress = http://localhost:5232
+
+GET {{Brownsquare_twilio_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
