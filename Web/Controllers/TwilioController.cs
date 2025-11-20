@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 namespace Brownsquare_twilio_backend.Controllers
 {
     [Authorize]
-    [Route("webhook/[controller]")]
     [ApiController]
+    [Route("webhook/[controller]")]
     public class TwilioController : ControllerBase
     {
         private ILogger<TwilioController>? _logger; 
@@ -40,6 +40,10 @@ namespace Brownsquare_twilio_backend.Controllers
             });
         }
 
+        /// <summary>
+        /// Generar una orden recibida desde Twilio
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         [Route("save/order")]
         public IActionResult SaveOrder()
@@ -47,7 +51,7 @@ namespace Brownsquare_twilio_backend.Controllers
             try
             {
                 // Lógica para guardar la orden recibida desde Twilio
-                _logger.LogInformation("Orden recibida desde Twilio y salvada correctamente.");
+                _logger?.LogInformation("Orden recibida desde Twilio y salvada correctamente.");
                 return Ok(new ResponseTwilio
                 {
                     status = true,
@@ -58,7 +62,7 @@ namespace Brownsquare_twilio_backend.Controllers
             {
                 
                 // En caso de error, devolver un mensaje adecuado
-                _logger.LogError(ex, "Error al salvar la orden desde Twilio");
+                _logger?.LogError(ex, "Error al salvar la orden desde Twilio");
                 return BadRequest(new ResponseTwilio
                 {
                     status = false,
