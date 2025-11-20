@@ -22,4 +22,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Bussiness\Bussiness\Bussiness.csproj" />
+    <ProjectReference Include="..\Shared\Dto\Dto.csproj" />
+    <ProjectReference Include="..\Utils\Utils\Utils.csproj" />
+  </ItemGroup>
+
 </Project>
