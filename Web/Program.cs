@@ -1,6 +1,7 @@
 ﻿//using Brownsquare_twilio_backend.Middlewares;
 using Brownsquare_twilio_backend.Hnadlers;
 using Brownsquare_twilio_backend.Middlewares;
+using Brownsquare_twilio_backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
@@ -70,6 +71,15 @@ builder.Services.AddAuthentication(options =>
 })
 .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
     ApiKeyAuthenticationHandler.SchemeName, null);
+
+//Configuracion de singletones
+//Cliente gRPC de WhatsApp
+builder.Services.AddSingleton<WhatsAppGrpcClient>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var grpcAddress = configuration["GrpcSettings:WhatsAppService:Address"] ?? "http://localhost:50051";
+    return new WhatsAppGrpcClient(grpcAddress);
+});
 
 var app = builder.Build();
 

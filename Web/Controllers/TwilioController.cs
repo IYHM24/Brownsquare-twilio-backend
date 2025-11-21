@@ -1,8 +1,9 @@
 ﻿using Brownsquare_twilio_backend.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Utils;
+using Dto;
+using Brownsquare_twilio_backend.Services;
 
 namespace Brownsquare_twilio_backend.Controllers
 {
@@ -12,10 +13,23 @@ namespace Brownsquare_twilio_backend.Controllers
     public class TwilioController : ControllerBase
     {
         private ILogger<TwilioController>? _logger; 
+        private readonly WhatsAppGrpcClient _whatsappGrpcClient;
+        private readonly IConfiguration _configuration;
 
-        public TwilioController(ILogger<TwilioController> logger)
+        /// <summary>
+        /// Constructor del controlador Twilio
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="whatsappGrpcClient"></param>
+        public TwilioController(
+            ILogger<TwilioController> logger,
+            WhatsAppGrpcClient whatsappGrpcClient,
+            IConfiguration configuration
+        )
         {
             _logger = logger;
+            _whatsappGrpcClient = whatsappGrpcClient;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -46,10 +60,37 @@ namespace Brownsquare_twilio_backend.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("save/order")]
-        public IActionResult SaveOrder()
+        public async Task<IActionResult> SaveOrder(OrderDto order)
         {
             try
             {
+                //1. Obtener datos del pedido
+                string informacion_cliente = order.client_information ?? "";
+                string numero_telefono = order.PhoneNumber ?? "";
+                string tipo_pedido = order.orderType ?? "";
+                string precio_sugerido = MathUtil.PriceCalculator(tipo_pedido).ToString();
+                string message_id = ToolUtil.GenerateUniqueId();
+
+                //2. Generar la notificacion a whatsapp del nuevo pedido
+                await _whatsappGrpcClient.SendMessageAsync(
+
+                    // Número de teléfono destino (administrador)
+                    _configuration["WhatsAppService:PhoneToNotify"] ?? "3506930989",
+
+                    // Código de país
+                    _configuration["WhatsAppService:CountryCode"] ?? "57",
+
+                    //Cuerpo del mensaje
+                    $"Nuevo pedido recibido:\n\n" +
+                    $"Información del cliente: {informacion_cliente}\n" +
+                    $"Tipo de pedido: {tipo_pedido}\n" +
+                    $"Precio sugerido: {precio_sugerido}\n\n" +
+                    $"Por favor, proceder con la gestión del pedido.",
+
+                    // Id del mensaje
+                    message_id
+                );
+
                 // Lógica para guardar la orden recibida desde Twilio
                 _logger?.LogInformation("Orden recibida desde Twilio y salvada correctamente.");
                 return Ok(new ResponseTwilio
@@ -70,5 +111,7 @@ namespace Brownsquare_twilio_backend.Controllers
                 });
             }
         }
+
+
     }
 }

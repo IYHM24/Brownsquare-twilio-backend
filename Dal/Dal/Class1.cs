@@ -1,7 +1,12 @@
 ﻿namespace Dal
 {
-    public class Class1
+    public class Dal
     {
+        public Dal()
+        {
+                
+        }
 
+        //Futuras expansiones ...
     }
 }
