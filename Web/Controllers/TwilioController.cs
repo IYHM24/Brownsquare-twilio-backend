@@ -95,8 +95,8 @@ namespace Brownsquare_twilio_backend.Controllers
 
                     //Cuerpo del mensaje
                     $"Nuevo pedido recibido:\n\n" +
-                    $"Información del cliente: {informacion_cliente}\n" +
-                    $"Tipo de pedido: {tipo_pedido}\n" +
+                    $"Información del cliente: {informacion_cliente}\n\n" +
+                    $"Tipo de pedido: {tipo_pedido}\n\n" +
                     $"Precio sugerido: {precio_sugerido}\n\n" +
                     $"Por favor, proceder con la gestión del pedido.",
 

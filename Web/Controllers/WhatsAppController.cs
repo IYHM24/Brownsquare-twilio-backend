@@ -1,6 +1,9 @@
 ﻿using Brownsquare_twilio_backend.Services;
+using Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Twilio.TwiML.Voice;
+using Utils;
 using WhatsApp;
 
 namespace Brownsquare_twilio_backend.Controllers
@@ -15,14 +18,16 @@ namespace Brownsquare_twilio_backend.Controllers
         /// </summary>
         private readonly ILogger<WhatsAppController> _logger;
         private readonly WhatsAppGrpcClient _whatsAppGrpcClient;
+        private readonly IConfiguration _config;
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="logger"></param>
-        public WhatsAppController(ILogger<WhatsAppController> logger)
+        public WhatsAppController(ILogger<WhatsAppController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
             _whatsAppGrpcClient = new WhatsAppGrpcClient();
         }
 
@@ -147,5 +152,51 @@ namespace Brownsquare_twilio_backend.Controllers
                 return StatusCode(500, "Error interno al reiniciar conexión");
             }
         }
+
+        /// <summary>
+        /// Metodo para enviar un mensaje de prueba
+        /// </summary>
+        /// <param name="messageDto"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("test/message")]
+        public async Task<IActionResult> SendTestMessage(TestMessageDto messageDto)
+        {
+            try
+            {
+                //1. Validar que no este vacio el mensaje
+                if (string.IsNullOrEmpty(messageDto.Message))
+                {
+                    return BadRequest("Debe agregar un valor al campo mensaje");
+                }
+
+                string message_id = ToolUtil.GenerateUniqueId();
+
+                //2. Generar el mensaje de prueba
+                await _whatsAppGrpcClient.SendMessageAsync(
+
+                    // Número de teléfono destino (administrador)
+                    _config["WhatsAppService:PhoneToNotify"] ?? "3506930989",
+
+                    // Código de país
+                    _config["WhatsAppService:CountryCode"] ?? "57",
+
+                    //Cuerpo del mensaje
+                    messageDto.Message!,
+
+                    // Id del mensaje
+                    message_id
+                );
+
+                return Ok("Mensaje de prueba enviado con exito!");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error al reiniciar conexión de WhatsApp");
+                _logger.LogError(ex.Message);
+                return StatusCode(500, "Error interno al reiniciar conexión");
+            }
+        }
+
     }
 }
