@@ -37,5 +37,6 @@ RUN dotnet publish "Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -
 # Esta fase se usa en producción o cuando se ejecuta desde VS en modo normal (valor predeterminado cuando no se usa la configuración de depuración)
 FROM base AS final
 WORKDIR /app
+USER root
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Brownsquare-twilio-backend.dll"]

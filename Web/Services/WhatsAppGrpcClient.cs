@@ -19,6 +19,7 @@ namespace Brownsquare_twilio_backend.Services
             // Configurar el canal gRPC
             _channel = GrpcChannel.ForAddress(_serverAddress, new GrpcChannelOptions
             {
+                Credentials = ChannelCredentials.Insecure, // ← AÑADIR ESTA LÍNEA para habilitar testeo en HTTP
                 HttpHandler = new SocketsHttpHandler
                 {
                     PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,

@@ -24,11 +24,15 @@ namespace Brownsquare_twilio_backend.Controllers
         /// Constructor
         /// </summary>
         /// <param name="logger"></param>
-        public WhatsAppController(ILogger<WhatsAppController> logger, IConfiguration config)
+        public WhatsAppController(
+            ILogger<WhatsAppController> logger,
+            IConfiguration config,
+            WhatsAppGrpcClient whatsAppGrpcClient
+        )
         {
             _logger = logger;
             _config = config;
-            _whatsAppGrpcClient = new WhatsAppGrpcClient();
+            _whatsAppGrpcClient = whatsAppGrpcClient;
         }
 
         /// <summary>

@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.OpenApi.Models;
 using Utils;
 
+
+//Habilitar soporte para HTTP/2 sin cifrado (gRPC)
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true); // ← AÑADIR ESTA LÍNEA para habilitar testeo en HTTP
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -27,7 +32,7 @@ string[] origenes_permitidos = new string[]
 
 };
 
-//Politica de cors
+//Politica de corsAddSingleton
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("cors_policy", policy =>
@@ -90,12 +95,12 @@ builder.Services.AddScoped<AuthTwilioFilter>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     //Configurar Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 app.UseHttpsRedirection();
 

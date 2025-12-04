@@ -16,15 +16,17 @@ namespace Brownsquare_twilio_backend.Controllers
         /// </summary>
         private readonly ILogger<HealthController> _logger;
         private readonly WhatsAppGrpcClient _whatsAppGrpcClient;
-        
+        private readonly IConfiguration _config;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="logger"></param>
-        public HealthController(ILogger<HealthController> logger)
+        public HealthController(ILogger<HealthController> logger, IConfiguration config, WhatsAppGrpcClient whatsAppGrpcClient)
         {
             _logger = logger;
-            _whatsAppGrpcClient = new WhatsAppGrpcClient();
+            _config = config;
+            _whatsAppGrpcClient = whatsAppGrpcClient;
         }
 
         /// <summary>
@@ -43,6 +45,7 @@ namespace Brownsquare_twilio_backend.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("Fallo al obtener la salud del servicio WhatsApp");
+                _logger.LogError("Direccion del servicio: " + _config["GrpcSettings:WhatsAppService:Address"]);
                 _logger.LogError(ex.Message);
                 BadRequest("Fallo al obtener la salud");
                 return null;
