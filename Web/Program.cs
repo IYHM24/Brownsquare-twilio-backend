@@ -1,10 +1,13 @@
 ﻿//using Brownsquare_twilio_backend.Middlewares;
+using Brownsquare_twilio_backend.Filters;
 using Brownsquare_twilio_backend.Hnadlers;
 using Brownsquare_twilio_backend.Middlewares;
 using Brownsquare_twilio_backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.OpenApi.Models;
+using Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,7 +75,7 @@ builder.Services.AddAuthentication(options =>
 .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
     ApiKeyAuthenticationHandler.SchemeName, null);
 
-//Configuracion de singletones
+//Configuracion de singletones - instancia global única
 //Cliente gRPC de WhatsApp
 builder.Services.AddSingleton<WhatsAppGrpcClient>(sp =>
 {
@@ -81,11 +84,15 @@ builder.Services.AddSingleton<WhatsAppGrpcClient>(sp =>
     return new WhatsAppGrpcClient(grpcAddress);
 });
 
+//Configuracion de scoped - instancia por solicitud
+builder.Services.AddScoped<AuthTwilioFilter>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    //Configurar Swagger
     app.UseSwagger();
     app.UseSwaggerUI();
 }

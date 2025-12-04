@@ -1,13 +1,14 @@
-﻿using Brownsquare_twilio_backend.Models;
+﻿using Brownsquare_twilio_backend.Filters;
+using Brownsquare_twilio_backend.Models;
+using Brownsquare_twilio_backend.Services;
+using Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Utils;
-using Dto;
-using Brownsquare_twilio_backend.Services;
 
 namespace Brownsquare_twilio_backend.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("webhook/[controller]")]
     public class TwilioController : ControllerBase
@@ -32,7 +33,12 @@ namespace Brownsquare_twilio_backend.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Conocer estado del servicio
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
+        [Authorize]
         [Route("estado/test")]
         public IActionResult Test()
         {
@@ -43,9 +49,15 @@ namespace Brownsquare_twilio_backend.Controllers
             });
         }
 
+        /// <summary>
+        /// Validar el estado del servicio - Twilio
+        /// </summary>
+        /// <param name="testBody"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("test")]
-        public IActionResult TestTwilio()
+        [ServiceFilter(typeof(AuthTwilioFilter))]
+        public IActionResult TestTwilio(TestTwilioDto testBody)
         {
             return Ok(new ResponseTwilio
             {
@@ -60,6 +72,7 @@ namespace Brownsquare_twilio_backend.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("save/order")]
+        [ServiceFilter(typeof(AuthTwilioFilter))]
         public async Task<IActionResult> SaveOrder(OrderDto order)
         {
             try
