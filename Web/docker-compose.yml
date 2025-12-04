@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  brownsquare-twilio-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brownsquare-twilio-backend
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - JWT__ApiKey__key=${API_KEY}
+      - JWT__TwilioSignature__TwilioAuthToken=${TWILIO_AUTH_TOKEN}
+      - GrpcSettings__WhatsAppService__Address=${GRPC_WHATSAPP_ADDRESS}
+      - WhatsAppService__PhoneToNotify=${PHONE_TO_NOTIFY}
+      - WhatsAppService__CountryCode=${COUNTRY_CODE}
+    networks:
+      - brownsquare-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Descomentar si necesitas el servicio gRPC de WhatsApp
+  # whatsapp-service:
+  #   image: your-whatsapp-grpc-service:latest
+  #   container_name: whatsapp-grpc-service
+  #   ports:
+  #     - "50051:50051"
+  #   networks:
+  #     - brownsquare-network
+  #   restart: unless-stopped
+
+networks:
+  brownsquare-network:
+    driver: bridge

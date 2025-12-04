@@ -7,7 +7,7 @@
     <RootNamespace>Brownsquare_twilio_backend</RootNamespace>
     <UserSecretsId>7b2dd71d-6678-4d30-89d7-0933234a673e</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>.</DockerfileContext>
+    <DockerfileContext>..</DockerfileContext>
   </PropertyGroup>
 
 	<ItemGroup>

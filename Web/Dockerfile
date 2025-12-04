@@ -12,16 +12,27 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Brownsquare-twilio-backend.csproj", "."]
-RUN dotnet restore "./Brownsquare-twilio-backend.csproj"
+
+# Copiar los archivos .csproj de todos los proyectos
+COPY ["Web/Brownsquare-twilio-backend.csproj", "Web/"]
+COPY ["Bussiness/Bussiness/Bussiness.csproj", "Bussiness/Bussiness/"]
+COPY ["Shared/Dto/Dto.csproj", "Shared/Dto/"]
+COPY ["Utils/Utils/Utils.csproj", "Utils/Utils/"]
+
+# Restaurar dependencias
+RUN dotnet restore "Web/Brownsquare-twilio-backend.csproj"
+
+# Copiar todo el código fuente
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Compilar el proyecto
+WORKDIR "/src/Web"
+RUN dotnet build "Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Esta fase se usa para publicar el proyecto de servicio que se copiará en la fase final.
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Brownsquare-twilio-backend.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Esta fase se usa en producción o cuando se ejecuta desde VS en modo normal (valor predeterminado cuando no se usa la configuración de depuración)
 FROM base AS final
